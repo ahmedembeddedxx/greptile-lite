@@ -1,9 +1,11 @@
 ---
 name: greptile-lite
-description: Greptile-style AI code review for any repository. Reviews a GitHub pull request (or a local diff), finds real bugs with concrete failure scenarios, grades them P0/P1/P2, gives a score out of 5, and posts inline comments on the changed lines plus one summary comment, the way Greptile does. Use when asked to "review this PR", "greptile this", "greptile lite", "drop review comments", or to score a PR before merging.
+description: Greptile-style AI code review for any repository, any language or stack. Reviews a GitHub pull request (or a local diff), finds real bugs with concrete failure scenarios, grades them P0/P1/P2, gives a score out of 5, and posts inline comments on the changed lines plus one summary comment, the way Greptile does. Use when asked to "review this PR", "greptile this", "greptile lite", "drop review comments", or to score a PR before merging.
 ---
 
 # Greptile Lite: review a PR and drop comments
+
+Works on any codebase: language, framework and stack are read from the repo itself. Needs `git` and the GitHub CLI (`gh`) for posting; without `gh`, use `--no-post`.
 
 Goal: the review a careful senior engineer would leave. Few comments, each one a real problem with a concrete scenario, anchored to the exact line. No style nits, no praise, no restating the diff.
 
@@ -25,13 +27,13 @@ Goal: the review a careful senior engineer would leave. Few comments, each one a
 Go through each lens on every hunk. Write down candidate findings with file, line and a one-line scenario.
 
 - **Correctness**: inverted or off-by-one conditions, wrong units or timezones, null/None/undefined paths, missing `await`, wrong default, a branch that can never run, mixed bases (comparing values measured differently), a key collision (looking things up by a non-unique name).
-- **Callers and contracts**: a changed signature, return shape or meaning that an untouched caller still relies on; a removed field an API client, frontend or SDK still reads.
+- **Callers and contracts**: a changed signature, return shape or meaning that an untouched caller still relies on; a removed field that another consumer (a client app, SDK, CLI, plugin or dependent service) still reads.
 - **Data and state**: writes without a transaction, partial failure leaving bad state, migrations that lock or cannot be rolled back, caches keyed on the wrong thing, idempotency of retries.
 - **Concurrency and time**: races, shared mutable state, timeouts that hang, tests or code that depend on today's date or wall-clock timing.
 - **Security**: authz on new routes, user input reaching SQL/shell/templates, secrets in code or logs, data from one user reaching another.
 - **Failure paths**: what happens when the optional dependency, network call or parse fails: degrade with a message, or crash/empty answer.
 - **Tests**: does a test actually fail if the change is reverted? Tests that only assert mocks, or pinned values updated without reason.
-- **Docs and client alignment**: if a user can now see or do something different, is the user-facing documentation updated? If a backend route, tool or number changed, do its other clients (API SDK, MCP server, CLI, frontend) still match?
+- **Docs and consumer alignment** (only where the repo has them): if a user can now see or do something different, are the README, docs or changelog updated? If a public interface changed (an endpoint, function, schema, CLI flag or config key), do the other code paths and consumers that expose or read it still match?
 
 ## 3. Verify every candidate (this is what makes it Greptile-quality)
 
@@ -67,7 +69,7 @@ gh api repos/{owner}/{repo}/pulls/<n>/reviews --method POST --input review.json
   "event": "COMMENT",
   "body": "<summary, below>",
   "comments": [
-    {"path": "src/x.py", "line": 42, "side": "RIGHT",
+    {"path": "src/module.ext", "line": 42, "side": "RIGHT",
      "body": "**P1**: <what is wrong>. <Scenario: concrete input -> wrong result>. <Fix in one line, or a ```suggestion block>."}
   ]
 }
@@ -86,7 +88,7 @@ Summary body shape:
 |---|---|---|
 | P2 | <one line> | `path:line` |
 
-**Docs:** updated / owed: <page>.  **Clients (API/MCP/SDK/frontend):** aligned / owed: <what>.
+**Docs:** updated / owed: <page> / not applicable.  **Consumers:** aligned / owed: <what> / not applicable.
 **Merge:** yes (4/5+, no P0/P1) / no, until <finding> is fixed.
 ```
 

@@ -2,13 +2,13 @@
 
 **I replaced my $100/month Greptile subscription with this one skill, and it caught more real bugs.**
 
-Same workflow you know from Greptile (inline comments on the exact lines, a summary with a confidence score, a merge call), running on the Claude Code you already pay for. No extra seat, no extra bill.
+Same workflow you know from Greptile (inline comments on the exact lines, a summary with a confidence score, a merge call), running on the Claude Code you already pay for. Any language, any stack, any GitHub repository. No extra seat, no extra bill.
 
 ## Why it holds up
 
 - **Reads the code around the change**, not just the hunk: every caller and reader of what changed, plus your repo's own rules (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`).
 - **Verifies before it comments.** Each finding needs a concrete input that breaks, and is checked against the code to try to disprove it. No "consider renaming", no noise.
-- **Checks what a diff-only bot misses:** stale callers, docs that no longer match, and API/SDK/MCP/frontend clients that drift from the backend.
+- **Checks what a diff-only bot misses:** stale callers, docs that no longer match, and public interfaces whose other consumers (apps, SDKs, CLIs, services) no longer match.
 - **Comments only.** Never approves, never merges, never posts twice.
 
 ## What it does
@@ -34,7 +34,7 @@ In Claude Code, inside the repository:
 
 ## What it checks
 
-Correctness, broken callers and contracts, data and migrations, concurrency and time, security, failure paths, tests that cannot fail, and whether docs and other clients (API, SDK, MCP, frontend) still match the change. Every finding is verified against the code before it is kept; speculative and style comments are dropped.
+Correctness, broken callers and contracts, data and migrations, concurrency and time, security, failure paths, tests that cannot fail, and whether docs and other consumers of a changed interface still match. Every finding is verified against the code before it is kept; speculative and style comments are dropped.
 
 ## Scoring
 
